@@ -1,4 +1,7 @@
 package ftp;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.Properties;
@@ -11,7 +14,8 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException; 
+import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.SftpProgressMonitor; 
 
 /**
  * 
@@ -59,7 +63,35 @@ public class TestFTP {
 			
 	    	ChannelSftp connect = connect("47.93.226.82", 22, "root", "lxq520..");
 	    	try {
-				connect.get("/root/docker_run.sh", "D://docker_run.sh"); //文件下载
+//				connect.get("/root/docker_run.sh", "D://docker_run.sh"); //文件下载 
+//	    		connect.rename("/root/docker_run.sh", "/root/docker_run_bak.sh"); //文件重命名
+	    		try {
+	    			SftpProgressMonitor monitor =new SftpProgressMonitor() {
+						
+						public void init(int op, String src, String dest, long max) {
+							
+							System.out.println("op "+op);
+							System.out.println("src "+src);
+							System.out.println("dest"+dest);
+							System.out.println("max "+max);
+						}
+						
+						public void end() {
+							System.out.println("end ~!!");
+						}
+						
+						public boolean count(long count) {
+							return false;
+						}
+					};
+					//dst 必须是文件名称
+					connect.put(new FileInputStream(new File("F:\\alipar_demo\\readme.txt")), "/root/mydesc/readme.txt",monitor);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    		
+	    		
 				System.out.println("success");
 				connect.disconnect();
 				connect.exit();
